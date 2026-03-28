@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors'); // Import CORS package
 const app = express();
 
-Db = "mongodb+srv://yoyoalaa430:yoyo1alaa@cluster0.ppyav.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const Db = "mongodb+srv://yoyoalaa430:yoyo1alaa@cluster0.ppyav.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
 // Import routes
 const authRouter = require("./routes/auth");
@@ -31,6 +31,8 @@ const PORT = process.env.PORT || 3000;
 
 mongoose.connect(Db).then(() => {
   console.log('connected');
+}).catch((e) => {
+  console.error('Database connection error:', e.message);
 })
 
 app.listen(PORT, () => {

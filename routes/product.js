@@ -52,19 +52,25 @@ productRouter.get('/api/products', async (req, res) => {
 
 productRouter.get('/category/products', async (req, res) => {
     try {
-        // Check if category query parameter is provided
         const category = req.query.category;
         let products;
         if (category) {
-            // Find products where category matches the query parameter
             products = await Product.find({ category: category });
         } else {
-            // If no category provided, return all products
             products = await Product.find();
         }
-        res.status(200).json(products); // Send the products as JSON response
+        res.status(200).json(products);
     } catch (error) {
-        res.status(500).json({ error: error.message }); // Send error response
+        res.status(500).json({ error: error.message });
+    }
+});
+
+productRouter.get('/api/products-by-category/:category', async (req, res) => {
+    try {
+        const products = await Product.find({ category: req.params.category });
+        res.status(200).json(products);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
@@ -127,6 +133,44 @@ productRouter.put('/api/products/:id', async (req, res) => {
   } catch (error) {
     console.error('Update error:', error.message);
     res.status(500).json({ error: error.message });
+  }
+});
+
+productRouter.get('/api/related-products-by-subcategory/:productId', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.productId);
+    if (!product) return res.status(404).json([]);
+    const related = await Product.find({
+      subCategory: product.subCategory,
+      _id: { $ne: product._id }
+    }).limit(10);
+    res.status(200).json(related);
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to load related products' });
+  }
+});
+
+productRouter.get('/api/top-rated-products', async (req, res) => {
+  try {
+    const products = await Product.find({ recommed: true }).limit(10);
+    res.status(200).json(products);
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to load top rated products' });
+  }
+});
+
+productRouter.get('/api/search-products', async (req, res) => {
+  try {
+    const query = req.query.query || '';
+    const products = await Product.find({
+      $or: [
+        { productName: { $regex: query, $options: 'i' } },
+        { description: { $regex: query, $options: 'i' } }
+      ]
+    });
+    res.status(200).json(products);
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to search products' });
   }
 });
 
